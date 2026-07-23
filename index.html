@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>◢ Investment Tools｜資産管理 &amp; 半導体AIマップ</title>
+<style>
+  :root{
+    --bg:#050a16; --bg2:#081226; --card:rgba(12,24,48,.9); --line:rgba(56,189,248,.22); --line2:rgba(56,189,248,.5);
+    --txt:#e6f1ff; --sub:#7e93b8; --cyan:#22d3ee; --blue:#3b82f6; --gold:#ffd166; --violet:#a78bfa;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+    background:var(--bg);color:var(--txt);min-height:100vh;position:relative;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px 40px;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(1000px 500px at 80% -10%, rgba(34,211,238,.12), transparent 60%),
+      radial-gradient(800px 500px at 10% 110%, rgba(59,130,246,.12), transparent 60%),
+      linear-gradient(rgba(56,189,248,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,.04) 1px, transparent 1px);
+    background-size:auto,auto,44px 44px,44px 44px;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:760px;}
+  .head{text-align:center;margin-bottom:30px;}
+  .mark{width:60px;height:60px;margin:0 auto 14px;border-radius:15px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04101f;font-weight:900;font-size:30px;
+    box-shadow:0 0 28px rgba(34,211,238,.6);}
+  h1{font-size:22px;letter-spacing:2px;
+    background:linear-gradient(90deg,#e6f1ff,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .head p{color:var(--sub);font-size:12.5px;margin-top:8px;letter-spacing:1px;}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:600px){ .cards{grid-template-columns:1fr;} }
+  a.card{display:block;text-decoration:none;color:var(--txt);background:var(--card);border:1px solid var(--line);
+    border-radius:18px;padding:24px;transition:.2s;position:relative;overflow:hidden;
+    box-shadow:0 0 18px rgba(34,211,238,.06), inset 0 0 40px rgba(34,211,238,.03);}
+  a.card:hover{transform:translateY(-4px);border-color:var(--line2);box-shadow:0 10px 30px rgba(34,211,238,.2);}
+  a.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ac);box-shadow:0 0 14px var(--ac);}
+  .card .ico{font-size:34px;margin-bottom:12px;filter:drop-shadow(0 0 8px var(--ac));}
+  .card h2{font-size:17px;margin-bottom:8px;}
+  .card p{font-size:12px;color:var(--sub);line-height:1.7;}
+  .card .go{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:13px;font-weight:800;color:var(--ac);}
+  .foot{text-align:center;margin-top:26px;color:var(--sub);font-size:11px;line-height:1.8;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div class="mark">◢</div>
+      <h1>INVESTMENT TOOLS</h1>
+      <p>資産管理トラッカー ＆ 半導体・AI 業界マップ</p>
+    </div>
+    <div class="cards">
+      <a class="card" href="asset.html" style="--ac:var(--gold)">
+        <div class="ico">💹</div>
+        <h2>資産管理トラッカー</h2>
+        <p>AI・半導体の業界マップ、総資産の配分、株の損益から作る資産推移グラフ、株の利益で行く海外旅行の資金＆世界地図。</p>
+        <span class="go">開く →</span>
+      </a>
+      <a class="card" href="map.html" style="--ac:var(--cyan)">
+        <div class="ico">🏭</div>
+        <h2>半導体・AI 業界マップ</h2>
+        <p>半導体・AIを1本の「組み立てライン」に見立てた全体像。企業をタップで事業詳細。日本株の制度信用倍率も掲載。</p>
+        <span class="go">開く →</span>
+      </a>
+    </div>
+    <div class="foot">
+      ※データは各自のブラウザ内に保存されます（他の人とは共有されません）。<br>
+      スマホ・PCどちらのブラウザでも開けます。
+    </div>
+  </div>
+</body>
+</html>
