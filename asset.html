@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>◢ ASSET TRACKER｜AI・半導体 資産管理</title>
+<style>
+  :root{
+    --bg:#050a16; --bg2:#081226; --panel:rgba(12,24,48,.88); --panel2:rgba(16,32,62,.92);
+    --line:rgba(56,189,248,.22); --line2:rgba(56,189,248,.45);
+    --txt:#e6f1ff; --sub:#7e93b8; --cyan:#22d3ee; --teal:#2dd4bf; --blue:#3b82f6;
+    --gold:#ffd166; --green:#34f5a2; --red:#ff5d7a; --pink:#f472b6;
+    --glow:0 0 18px rgba(34,211,238,.18);
+    --l-service:#a78bfa; --l-neo:#38bdf8; --l-design:#34d399; --l-fab:#fbbf24;
+    --l-equip:#fb7185; --l-mat:#e879f9; --l-infra:#22d3ee; --l-robo:#fb923c; --l-quant:#c084fc;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+    background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:70px;position:relative;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(1000px 500px at 80% -10%, rgba(34,211,238,.10), transparent 60%),
+      radial-gradient(800px 500px at 10% 110%, rgba(59,130,246,.10), transparent 60%),
+      linear-gradient(rgba(56,189,248,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,.035) 1px, transparent 1px);
+    background-size:auto,auto,44px 44px,44px 44px;}
+  header,main{position:relative;z-index:1;}
+
+  /* ===== トップバー ===== */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    padding:14px 20px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(10,20,40,.9),rgba(6,12,26,.7));backdrop-filter:blur(6px);}
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo .mark{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04101f;font-weight:900;font-size:18px;
+    box-shadow:0 0 16px rgba(34,211,238,.55);}
+  .logo .nm{font-weight:900;letter-spacing:2.5px;font-size:16px;
+    background:linear-gradient(90deg,#e6f1ff,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .logo .nm small{display:block;font-size:9px;letter-spacing:3px;color:var(--sub);-webkit-text-fill-color:var(--sub);}
+  .top-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .clock{font-size:12px;color:var(--sub);letter-spacing:1px;}
+  .viewmode{display:flex;border:1px solid var(--line2);border-radius:20px;overflow:hidden;}
+  .viewmode button{background:transparent;border:none;color:var(--sub);padding:6px 13px;font-size:12px;font-weight:700;cursor:pointer;}
+  .viewmode button.on{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04101f;}
+
+  .tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px auto 4px;max-width:1160px;padding:0 10px;}
+  .tab-btn{background:rgba(12,24,48,.8);border:1px solid var(--line);color:var(--sub);padding:10px 18px;border-radius:24px;
+    cursor:pointer;font-size:13.5px;font-weight:700;letter-spacing:.5px;transition:.2s;}
+  .tab-btn:hover{border-color:var(--line2);color:var(--txt);}
+  .tab-btn.active{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04101f;border-color:transparent;
+    box-shadow:0 0 22px rgba(34,211,238,.45);}
+  main{max-width:1160px;margin:0 auto;padding:14px;}
+  body[data-view="sp"] main{max-width:440px;}
+  body[data-view="sp"] .tabs{max-width:440px;}
+  section.page{display:none;}
+  section.page.active{display:block;animation:fade .25s;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;
+    box-shadow:var(--glow), inset 0 0 40px rgba(34,211,238,.03);}
+  .panel h2{font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:10px;letter-spacing:1px;
+    border-left:3px solid var(--cyan);padding-left:12px;text-shadow:0 0 12px rgba(34,211,238,.4);}
+  .muted{color:var(--sub);font-size:12px;line-height:1.8;}
+  button.act{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04101f;border:none;border-radius:10px;
+    padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 0 14px rgba(34,211,238,.35);letter-spacing:.5px;}
+  button.act:hover{filter:brightness(1.15);}
+  button.act.ghost{background:transparent;border:1px solid var(--line2);color:var(--cyan);box-shadow:none;}
+  button.act.danger{background:linear-gradient(135deg,#ff5d7a,#e11d48);color:#fff;box-shadow:0 0 14px rgba(255,93,122,.3);}
+  input,select,textarea{background:rgba(6,14,30,.9);border:1px solid var(--line);color:var(--txt);border-radius:10px;
+    padding:9px 12px;font-size:14px;outline:none;}
+  input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 10px rgba(34,211,238,.25);}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:9px 6px;border-bottom:1px solid rgba(56,189,248,.12);text-align:right;}
+  th{color:var(--sub);font-weight:700;font-size:10.5px;letter-spacing:1px;}
+  th:first-child,td:first-child{text-align:left;}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+  .stat{background:linear-gradient(160deg,rgba(20,40,75,.85),rgba(10,22,45,.85));border:1px solid var(--line);
+    border-radius:14px;padding:16px;text-align:center;box-shadow:inset 0 0 24px rgba(34,211,238,.05);}
+  .stat .label{font-size:10px;color:var(--sub);margin-bottom:8px;letter-spacing:2px;}
+  .stat .val{font-size:21px;font-weight:900;text-shadow:0 0 14px rgba(34,211,238,.35);}
+
+  /* ===== ピラミッド ===== */
+  #pyramid{margin:6px 0 4px;}
+  .pyr-svg{width:100%;height:auto;display:block;}
+  .pyr-svg .slice{cursor:pointer;transition:filter .15s;}
+  .pyr-svg .slice:hover{filter:brightness(1.35) drop-shadow(0 0 8px rgba(34,211,238,.6));}
+  .pyr-svg .lbl-name{font-weight:800;}
+  /* スマホ用ファネル */
+  .funnel{display:flex;flex-direction:column;gap:7px;}
+  .frow{display:flex;align-items:center;gap:10px;}
+  .frow .fbar{position:relative;min-height:52px;display:flex;flex-direction:column;justify-content:center;
+    padding:8px 16px;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 100%,0 100%);cursor:pointer;transition:.15s;}
+  .frow .fbar:hover{filter:brightness(1.25);}
+  .frow .fbar b{font-size:12px;color:#04101f;line-height:1.25;}
+  .frow .fbar small{font-size:9.5px;color:rgba(4,16,31,.75);font-weight:700;}
+  .frow .famt{font-size:11px;font-weight:800;color:var(--gold);white-space:nowrap;text-shadow:0 0 10px rgba(255,209,102,.4);}
+  .side-blocks{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px;}
+  body[data-view="sp"] .side-blocks{grid-template-columns:1fr;}
+  @media(max-width:700px){ body[data-view="auto"] .side-blocks{grid-template-columns:1fr;} }
+  .side{border-radius:12px;padding:12px 14px;cursor:pointer;line-height:1.5;position:relative;overflow:hidden;
+    background:rgba(10,22,45,.8);border:1px solid var(--line);transition:.15s;}
+  .side:hover{border-color:var(--line2);transform:translateY(-2px);}
+  .side::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--sc);box-shadow:0 0 12px var(--sc);}
+  .side b{font-size:12.5px;display:block;color:var(--txt);}
+  .side small{font-size:10.5px;color:var(--sub);}
+  .side .samt{color:var(--gold);font-weight:800;font-size:11.5px;}
+
+  /* ===== 企業カード ===== */
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .chip{border:1px solid var(--line);background:rgba(8,16,34,.8);color:var(--sub);border-radius:16px;padding:6px 13px;font-size:12px;cursor:pointer;transition:.15s;}
+  .chip:hover{border-color:var(--line2);}
+  .chip.on{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04101f;border-color:transparent;font-weight:800;
+    box-shadow:0 0 12px rgba(34,211,238,.35);}
+  .layer-sec{margin-bottom:24px;}
+  .layer-head{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:800;margin-bottom:4px;letter-spacing:.5px;}
+  .layer-head .dot{width:10px;height:10px;border-radius:2px;transform:rotate(45deg);box-shadow:0 0 10px currentColor;}
+  .layer-desc{color:var(--sub);font-size:12px;margin-bottom:10px;line-height:1.7;}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:10px;}
+  body[data-view="sp"] .cards{grid-template-columns:1fr;}
+  .co-card{background:linear-gradient(160deg,rgba(18,34,64,.9),rgba(9,18,38,.9));border:1px solid var(--line);
+    border-left:3px solid var(--cyan);border-radius:12px;padding:13px;cursor:pointer;transition:.15s;position:relative;}
+  .co-card:hover{transform:translateY(-3px);border-color:var(--line2);box-shadow:0 6px 22px rgba(34,211,238,.15);}
+  .co-card .tick{font-size:11px;color:var(--sub);font-weight:700;letter-spacing:1px;}
+  .co-card .nm{font-size:15px;font-weight:800;margin:3px 0 5px;}
+  .co-card .bs{font-size:11px;color:var(--sub);line-height:1.55;min-height:34px;}
+  .metrics{display:flex;gap:12px;margin-top:7px;font-size:11.5px;font-weight:700;}
+  .metrics .gw{color:var(--gold);text-shadow:0 0 8px rgba(255,209,102,.35);}
+  .metrics .vl{color:var(--red);text-shadow:0 0 8px rgba(255,93,122,.3);}
+  .co-card .alloc-tag{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,var(--green),#0dc98a);
+    color:#04101f;font-size:10px;font-weight:900;padding:2px 9px;border-radius:10px;box-shadow:0 0 10px rgba(52,245,162,.4);}
+  .mkflag{font-size:13px;}
+  .theme-tags{margin-top:7px;display:flex;gap:4px;flex-wrap:wrap;}
+  .ttag{font-size:9px;border:1px solid rgba(56,189,248,.3);color:#8fd6ee;border-radius:8px;padding:1px 6px;background:rgba(34,211,238,.06);}
+
+  /* ===== モーダル ===== */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(2,6,14,.78);backdrop-filter:blur(4px);z-index:50;
+    align-items:center;justify-content:center;padding:16px;}
+  .modal-bg.open{display:flex;}
+  .modal{background:linear-gradient(170deg,#0e1d3a,#081226);border:1px solid var(--line2);border-radius:16px;
+    max-width:530px;width:100%;padding:24px;max-height:88vh;overflow-y:auto;box-shadow:0 0 40px rgba(34,211,238,.2);}
+  .modal h2{font-size:18px;margin-bottom:4px;}
+  .modal .close-x{float:right;cursor:pointer;color:var(--sub);font-size:20px;}
+  .modal h3{color:var(--cyan);font-size:13px;margin:14px 0 8px;letter-spacing:1px;}
+
+  /* ===== ログイン ===== */
+  .login-bg{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;
+    background:rgba(3,8,18,.94);backdrop-filter:blur(10px);padding:16px;}
+  .login-bg.open{display:flex;}
+  .login-box{background:linear-gradient(170deg,#0e1d3a,#081226);border:1px solid var(--line2);border-radius:18px;
+    padding:34px 28px;max-width:400px;width:100%;text-align:center;box-shadow:0 0 50px rgba(34,211,238,.25);}
+  .login-box .lmark{width:54px;height:54px;margin:0 auto 12px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04101f;font-weight:900;font-size:28px;
+    box-shadow:0 0 24px rgba(34,211,238,.6);}
+  .login-box h2{letter-spacing:3px;font-size:19px;}
+  .login-box input{width:100%;text-align:center;font-size:16px;}
+  .userchip{display:none;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:800;}
+  .userchip .lo{background:none;border:none;color:var(--sub);cursor:pointer;font-size:10.5px;font-weight:700;}
+  .userchip .lo:hover{color:var(--red);}
+  .sdot{width:9px;height:9px;border-radius:50%;display:inline-block;background:#4a5878;}
+  .sdot.ok{background:var(--green);box-shadow:0 0 10px var(--green);}
+  .sdot.saving{background:var(--gold);box-shadow:0 0 10px var(--gold);}
+  .sdot.off{background:#4a5878;}
+
+  svg text{font-family:inherit;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--sub);margin-top:8px;}
+  .legend span::before{content:"■ ";}
+
+  /* ===== 旅行 ===== */
+  .travel-hero{background:
+      radial-gradient(600px 200px at 20% 0%, rgba(34,211,238,.18), transparent),
+      radial-gradient(500px 220px at 85% 100%, rgba(167,139,250,.2), transparent),
+      linear-gradient(150deg,#0c1c3c,#101a3e 60%,#1a1440);
+    border:1px solid var(--line2);border-radius:18px;padding:26px;text-align:center;margin-bottom:16px;
+    box-shadow:0 0 30px rgba(34,211,238,.12);}
+  .travel-hero .cap{font-size:12px;color:var(--sub);letter-spacing:3px;}
+  .travel-hero .amount{font-size:44px;font-weight:900;margin:10px 0;letter-spacing:1px;
+    background:linear-gradient(90deg,var(--gold),#ffe9a8,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 18px rgba(255,209,102,.45));}
+  .travel-hero .msg{font-size:14.5px;font-weight:700;}
+  .worldmap-wrap{background:#050f1f;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:inset 0 0 40px rgba(34,211,238,.05);}
+  .visited-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .visited-pill{background:rgba(10,22,45,.85);border:1px solid var(--line);border-radius:14px;padding:6px 12px;font-size:12px;display:flex;gap:6px;align-items:center;}
+  .visited-pill b{color:var(--gold);}
+  .visited-pill .del{cursor:pointer;color:var(--red);font-weight:800;}
+  .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;}
+  .bar-row .lbl{width:155px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;}
+  .bar-row .bar{flex:1;height:15px;background:rgba(6,14,30,.9);border-radius:8px;overflow:hidden;border:1px solid rgba(56,189,248,.12);}
+  .bar-row .bar i{display:block;height:100%;border-radius:8px;box-shadow:0 0 10px currentColor;}
+  .bar-row .amt{width:120px;font-weight:800;font-size:12px;}
+  body[data-view="sp"] .bar-row .lbl{width:95px;font-size:10px;}
+  body[data-view="sp"] .bar-row .amt{width:88px;font-size:10px;}
+  @media(max-width:600px){
+    body[data-view="auto"] .bar-row .lbl{width:95px;font-size:10px;}
+    body[data-view="auto"] .bar-row .amt{width:88px;font-size:10px;}
+    .travel-hero .amount{font-size:34px;}
+  }
+</style>
+</head>
+<body data-view="auto">
+<header>
+  <div class="topbar">
+    <div class="logo">
+      <div class="mark">◢</div>
+      <div class="nm">ASSET TRACKER<small>AI & SEMICONDUCTOR PORTFOLIO</small></div>
+    </div>
+    <div class="top-right">
+      <span class="clock" id="clock"></span>
+      <div class="userchip" id="userChip"><span class="sdot" id="syncDot"></span>👤 <span id="userNameLbl"></span><button class="lo" onclick="logout()">ログアウト</button></div>
+      <div class="viewmode" id="viewmode">
+        <button data-vm="auto" class="on">AUTO</button>
+        <button data-vm="pc">🖥 PC</button>
+        <button data-vm="sp">📱 SP</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="map">🗺 業界マップ</button>
+  <button class="tab-btn" data-tab="alloc">💰 配分ポートフォリオ</button>
+  <button class="tab-btn" data-tab="asset">📈 資産推移</button>
+  <button class="tab-btn" data-tab="travel">✈️ 旅行資金＆世界地図</button>
+</div>
+
+<main>
+<!-- ================= 業界マップ ================= -->
+<section class="page active" id="page-map">
+  <div class="panel">
+    <h2>AI・半導体バリューチェーン｜PYRAMID MAP</h2>
+    <p class="muted">川下（AIサービス）→川上（素材）の階層構造。各階層の右に<b style="color:var(--gold)">配分資産額</b>を表示。クリックで企業一覧へジャンプ。<br>
+    参考動画テーマ：①半導体メモリ ②AIデータセンター ③量子コンピュータ ④光半導体 ⑤ネオクラウド ⑥AIロボティクス ⑦日本半導体再建（元ゴールドマン解説シリーズ）</p>
+    <div id="pyramid"></div>
+    <div class="side-blocks" id="sideBlocks"></div>
+  </div>
+
+  <div class="panel">
+    <h2>企業マップ <span class="muted" style="font-weight:400;border:none;">（カードをタップ→詳細＆配分額の設定）</span></h2>
+    <div class="filters" id="themeFilters"></div>
+    <div class="filters" id="marketFilters"></div>
+    <div id="layerSections"></div>
+    <button class="act" onclick="openAddCompany()">＋ 自分で企業を追加する</button>
+  </div>
+</section>
+
+<!-- ================= 配分 ================= -->
+<section class="page" id="page-alloc">
+  <div class="panel">
+    <h2>総資産と配分設定</h2>
+    <div class="row" style="margin-bottom:14px;">
+      <label class="muted">投資に回せる総資産：</label>
+      <input type="number" id="totalAssetsInput" placeholder="例: 3000000" style="width:170px;">
+      <span>円</span>
+      <button class="act" onclick="saveTotalAssets()">保存</button>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="label">TOTAL ASSETS</div><div class="val" id="stTotal">¥0</div></div>
+      <div class="stat"><div class="label">ALLOCATED</div><div class="val" style="color:var(--green)" id="stAllocated">¥0</div></div>
+      <div class="stat"><div class="label">REMAINING</div><div class="val" style="color:var(--gold)" id="stRemain">¥0</div></div>
+      <div class="stat"><div class="label">POSITIONS</div><div class="val" id="stCount">0</div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>銘柄別の配分</h2>
+    <div id="allocBars"></div>
+    <p class="muted" id="allocEmpty">まだ配分がありません。「業界マップ」から企業をタップして配分額を設定してください。</p>
+  </div>
+  <div class="panel">
+    <h2>階層別の配分バランス</h2>
+    <div id="layerBars"></div>
+  </div>
+</section>
+
+<!-- ================= 資産推移 ================= -->
+<section class="page" id="page-asset">
+  <div class="panel">
+    <h2>株の損益サマリー <span class="muted" style="font-weight:400;border:none;">（「旅行資金＆世界地図」ページの記録から自動集計）</span></h2>
+    <div class="stat-grid">
+      <div class="stat"><div class="label">累計 利確 GAIN</div><div class="val" style="color:var(--green)" id="stGain">¥0</div></div>
+      <div class="stat"><div class="label">累計 損失 LOSS</div><div class="val" style="color:var(--red)" id="stLoss">¥0</div></div>
+      <div class="stat"><div class="label">純損益 NET P/L</div><div class="val" id="stNetPL">¥0</div></div>
+      <div class="stat"><div class="label">旅行に使った TRAVEL</div><div class="val" style="color:var(--pink)" id="stAssetTravel">¥0</div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>株の資産推移（累計損益）</h2>
+    <div id="assetChart"></div>
+    <div class="legend"><span style="color:var(--cyan)">株の累計損益</span><span style="color:var(--gold)">旅行クレジット残高</span></div>
+  </div>
+  <div class="panel">
+    <h2>株の損益ログ</h2>
+    <div style="overflow-x:auto;">
+    <table id="plTable">
+      <thead><tr><th>日付</th><th>種類</th><th>メモ</th><th>損益</th><th>累計損益</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    </div>
+    <p class="muted" id="plEmpty">「旅行資金＆世界地図」ページで株の利確・損失を記録すると、ここに自動でグラフとログが作られます。</p>
+  </div>
+</section>
+
+<!-- ================= 旅行 ================= -->
+<section class="page" id="page-travel">
+  <div class="travel-hero">
+    <div class="cap">STOCK PROFIT CREDIT ＝ 海外旅行費</div>
+    <div class="amount" id="travelCredit">¥0</div>
+    <div class="msg" id="travelMsg">利確して旅の資金を貯めよう！</div>
+  </div>
+
+  <div class="panel">
+    <h2>株の損益 ＆ 旅行支出の記録</h2>
+    <div class="row">
+      <select id="evType" style="width:180px;">
+        <option value="gain">📈 株の利確（＋）</option>
+        <option value="loss">📉 株の損失（−）</option>
+        <option value="travel">✈️ 旅行で使った（−）</option>
+      </select>
+      <input type="date" id="evDate">
+      <input type="number" id="evAmount" placeholder="金額（円）" style="width:130px;">
+      <input type="text" id="evMemo" placeholder="メモ（例：NVDA利確 / 損切り / バンコク旅行）" style="flex:1;min-width:180px;">
+      <button class="act" onclick="addEvent()">追加</button>
+    </div>
+    <p class="muted" style="margin-top:8px;">株の利確・損失を記録すると「資産推移」ページに株の資産推移グラフが自動で作られます。</p>
+    <div style="overflow-x:auto;margin-top:12px;">
+    <table id="evTable">
+      <thead><tr><th>日付</th><th>種類</th><th>メモ</th><th>金額</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>行った国と都市に旗を立てよう</h2>
+    <div class="row" style="margin-bottom:10px;">
+      <select id="cityPreset" style="min-width:200px;"></select>
+      <span class="muted">または手入力→</span>
+      <input type="text" id="cityName" placeholder="都市名" style="width:110px;">
+      <input type="text" id="countryName" placeholder="国名" style="width:100px;">
+      <input type="number" id="cityLat" placeholder="緯度" step="0.1" style="width:80px;">
+      <input type="number" id="cityLon" placeholder="経度" step="0.1" style="width:80px;">
+      <button class="act" onclick="addVisit()">🚩 旗を立てる</button>
+    </div>
+    <div class="worldmap-wrap" id="worldMapWrap"></div>
+    <div class="visited-list" id="visitedList"></div>
+    <div class="stat-grid" style="margin-top:12px;">
+      <div class="stat"><div class="label">COUNTRIES</div><div class="val" id="stCountries">0ヶ国</div></div>
+      <div class="stat"><div class="label">CITIES</div><div class="val" id="stCities">0都市</div></div>
+      <div class="stat"><div class="label">TRAVEL SPENT</div><div class="val" id="stTravelSpent">¥0</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>データ管理</h2>
+    <div class="row">
+      <button class="act ghost" onclick="exportData()">エクスポート（JSON保存）</button>
+      <button class="act ghost" onclick="document.getElementById('importFile').click()">インポート</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- 企業詳細モーダル -->
+<div class="modal-bg" id="coModalBg" onclick="if(event.target===this)closeModal('coModalBg')">
+  <div class="modal" id="coModal"></div>
+</div>
+<!-- 企業追加モーダル -->
+<div class="modal-bg" id="addModalBg" onclick="if(event.target===this)closeModal('addModalBg')">
+  <div class="modal">
+    <span class="close-x" onclick="closeModal('addModalBg')">✕</span>
+    <h2>＋ 企業を追加</h2>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+      <input type="text" id="addTicker" placeholder="ティッカー / 証券コード（例: 9984）">
+      <input type="text" id="addName" placeholder="企業名（例: ソフトバンクグループ）">
+      <select id="addMarket">
+        <option value="JP">🇯🇵 日本株</option><option value="US">🇺🇸 米国株</option><option value="OTHER">🌐 その他</option>
+      </select>
+      <select id="addLayer"></select>
+      <input type="number" id="addGrowth" min="1" max="5" placeholder="成長性（1〜5）">
+      <input type="number" id="addVol" min="1" max="5" placeholder="ボラティリティ（1〜5）">
+      <textarea id="addDesc" rows="3" placeholder="事業内容・投資メモ"></textarea>
+      <button class="act" onclick="addCustomCompany()">追加する</button>
+    </div>
+  </div>
+</div>
+
+<!-- ログイン画面 -->
+<div class="login-bg" id="loginBg">
+  <div class="login-box">
+    <div class="lmark">◢</div>
+    <h2>ASSET TRACKER</h2>
+    <p class="muted" style="margin:10px 0 18px;">ユーザーネームを入力してログイン。<br>PCとスマホで<b style="color:var(--cyan)">同じ名前</b>を使うとデータが同期されます。</p>
+    <input type="text" id="loginName" placeholder="ユーザーネーム（例: daichi）" onkeydown="if(event.key==='Enter')loginSubmit()">
+    <button class="act" onclick="loginSubmit()" style="width:100%;margin-top:12px;">ログイン</button>
+    <p class="muted" style="margin-top:14px;font-size:10.5px;">※同期するにはPCで「サーバー起動.command」を実行し、スマホは同じWi-Fiで <b>http://PCのIPアドレス:8790</b> を開いてください。サーバーが無くてもこの端末内に自動保存されます。</p>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   レイヤー定義（ピラミッド階層）
+============================================================ */
+const LAYERS = [
+  {id:'service', name:'AIサービス・クラウド', sub:'川下・需要の源泉', colorRaw:'#a78bfa',
+   desc:'AIを使ってサービスを提供する最上流の巨人たち。半導体需要の源泉。'},
+  {id:'neocloud', name:'ネオクラウド・AIデータセンター', sub:'GPU計算力の貸し手', colorRaw:'#38bdf8',
+   desc:'GPUを大量調達しAI計算力を貸し出す新興勢力。動画テーマ「ネオクラウド7選」の主戦場。'},
+  {id:'design', name:'半導体設計', sub:'ファブレス・EDA・IP', colorRaw:'#34d399',
+   desc:'工場を持たずチップを設計。GPU・カスタムAIチップ・設計ツールで利益率が高い層。'},
+  {id:'fab', name:'製造', sub:'ファウンドリ・メモリ・IDM', colorRaw:'#fbbf24',
+   desc:'実際にチップを作る層。動画テーマ「半導体メモリ11銘柄」のHBM/NANDもここ。'},
+  {id:'equip', name:'製造装置・検査', sub:'日本の得意分野', colorRaw:'#fb7185',
+   desc:'工場に装置を売る「ゴールドラッシュのツルハシ屋」。日本企業が世界シェア上位を独占する領域多数。'},
+  {id:'material', name:'素材・材料', sub:'川上・日本の牙城', colorRaw:'#e879f9',
+   desc:'ウェハ・レジスト・基板などの土台。シェア独占企業が多く「日本の半導体帝国再建」の core。'},
+];
+const SIDE_LAYERS = [
+  {id:'infra', name:'電力・冷却・光・通信インフラ', sub:'AIデータセンター/光半導体', colorRaw:'#22d3ee',
+   desc:'データセンターを支える電力・液冷・光ファイバー・光半導体。動画テーマ「AIデータセンター8銘柄」「光半導体3銘柄」の領域。'},
+  {id:'robotics', name:'AIロボティクス', sub:'フィジカルAI応用', colorRaw:'#fb923c',
+   desc:'AIがフィジカル世界へ。ヒューマノイド・産業ロボ・手術ロボ。動画テーマ「AIロボティクス6選」。'},
+  {id:'quantum', name:'量子コンピュータ', sub:'次の波', colorRaw:'#c084fc',
+   desc:'実用化されれば計算の常識が変わる次世代テーマ。動画テーマ「量子コンピュータ6銘柄」。'},
+];
+const ALL_LAYERS = [...LAYERS, ...SIDE_LAYERS];
+
+const THEMES = [
+  {id:'memory', name:'①半導体メモリ'},
+  {id:'datacenter', name:'②AIデータセンター'},
+  {id:'quantum', name:'③量子コンピュータ'},
+  {id:'optical', name:'④光半導体'},
+  {id:'neocloud', name:'⑤ネオクラウド'},
+  {id:'robotics', name:'⑥AIロボティクス'},
+  {id:'japan', name:'⑦日本半導体再建'},
+];
+
+/* ============================================================
+   企業データ（動画7テーマ×日米の主要プレイヤー）
+   growth: 成長性1〜5 ／ vol: ボラティリティ1〜5（過去の値動きの荒さ）
+============================================================ */
+const COMPANIES = [
+// ---- AIサービス・クラウド ----
+{id:'MSFT',ticker:'MSFT',name:'マイクロソフト',market:'US',layer:'service',themes:['datacenter'],growth:4,vol:2,
+ desc:'Azure＋Copilot＋OpenAI提携でAI時代のOS的存在。法人AI導入の王道。'},
+{id:'GOOGL',ticker:'GOOGL',name:'アルファベット',market:'US',layer:'service',themes:['datacenter','quantum'],growth:4,vol:2,
+ desc:'Gemini・自社TPU・量子チップWillowまで垂直統合。検索×AIの巨人。'},
+{id:'AMZN',ticker:'AMZN',name:'アマゾン',market:'US',layer:'service',themes:['datacenter'],growth:4,vol:3,
+ desc:'クラウド首位AWS。自社AIチップTrainiumでNVIDIA依存を下げる戦略。'},
+{id:'META',ticker:'META',name:'メタ・プラットフォームズ',market:'US',layer:'service',themes:['datacenter'],growth:4,vol:3,
+ desc:'広告×AIで超高収益。GPUへの投資額は世界最大級、Llamaでオープン戦略。'},
+{id:'ORCL',ticker:'ORCL',name:'オラクル',market:'US',layer:'service',themes:['datacenter','neocloud'],growth:4,vol:4,
+ desc:'OpenAI「スターゲイト」計画の中核。AIクラウドOCIの受注残が爆発的に拡大。'},
+{id:'PLTR',ticker:'PLTR',name:'パランティア',market:'US',layer:'service',themes:['datacenter'],growth:4,vol:5,
+ desc:'政府・軍・企業のデータをAIで意思決定に変えるソフトウェア。AIP需要が急伸。'},
+// ---- ネオクラウド ----
+{id:'CRWV',ticker:'CRWV',name:'コアウィーブ',market:'US',layer:'neocloud',themes:['neocloud','datacenter'],growth:5,vol:5,
+ desc:'GPU特化クラウドの代表格。NVIDIA出資、OpenAI・MSと大型契約。ネオクラウドの本命。'},
+{id:'NBIS',ticker:'NBIS',name:'ネビウス',market:'US',layer:'neocloud',themes:['neocloud'],growth:5,vol:5,
+ desc:'旧Yandex系のAIクラウド。Microsoftと数兆円規模の大型契約で急成長。'},
+{id:'IREN',ticker:'IREN',name:'アイレン（IREN）',market:'US',layer:'neocloud',themes:['neocloud'],growth:4,vol:5,
+ desc:'再生エネ由来の電力資産をAIデータセンターに転換。電力を握る者がAIを制す。'},
+{id:'APLD',ticker:'APLD',name:'アプライド・デジタル',market:'US',layer:'neocloud',themes:['neocloud'],growth:4,vol:5,
+ desc:'HPC向けデータセンターを開発・賃貸。CoreWeave向け長期リース契約を獲得。'},
+{id:'CIFR',ticker:'CIFR',name:'サイファー・マイニング',market:'US',layer:'neocloud',themes:['neocloud'],growth:3,vol:5,
+ desc:'ビットコインマイナーからAIデータセンターへ転身中。電力サイトが資産。'},
+{id:'WULF',ticker:'WULF',name:'テラウルフ',market:'US',layer:'neocloud',themes:['neocloud'],growth:3,vol:5,
+ desc:'原子力由来のクリーン電力でデータセンター運営。AI向けHPCホスティングに拡大。'},
+{id:'3778',ticker:'3778',name:'さくらインターネット',market:'JP',layer:'neocloud',themes:['neocloud','japan'],growth:4,vol:5,
+ desc:'国産GPUクラウドの代表。政府クラウド認定＋経産省支援で「日本のネオクラウド」。'},
+// ---- 設計 ----
+{id:'NVDA',ticker:'NVDA',name:'エヌビディア',market:'US',layer:'design',themes:['datacenter','robotics','neocloud'],growth:5,vol:4,
+ desc:'AI GPUの絶対王者。CUDA経済圏＋NVLinkで独占的地位。AI革命の震源地。'},
+{id:'AMD',ticker:'AMD',name:'AMD',market:'US',layer:'design',themes:['datacenter'],growth:4,vol:4,
+ desc:'MI300系でNVIDIA追撃。OpenAIとの大型提携でAI GPU第2極の座を固める。'},
+{id:'AVGO',ticker:'AVGO',name:'ブロードコム',market:'US',layer:'design',themes:['datacenter','optical'],growth:5,vol:3,
+ desc:'Google TPUなどカスタムAIチップ(XPU)設計＋ネットワーク半導体。脱NVIDIAの受け皿。'},
+{id:'MRVL',ticker:'MRVL',name:'マーベル・テクノロジー',market:'US',layer:'design',themes:['datacenter','optical'],growth:4,vol:4,
+ desc:'データセンター向けカスタム半導体と光DSPの雄。光インターコネクトの成長を取り込む。'},
+{id:'ARM',ticker:'ARM',name:'アーム',market:'US',layer:'design',themes:['datacenter'],growth:4,vol:4,
+ desc:'省電力CPU設計IPの独占企業。データセンターCPUにも浸透中。SBG傘下。'},
+{id:'QCOM',ticker:'QCOM',name:'クアルコム',market:'US',layer:'design',themes:['robotics'],growth:3,vol:3,
+ desc:'スマホSoC最大手。エッジAI・車載・PCへ多角化を進める。'},
+{id:'SNPS',ticker:'SNPS',name:'シノプシス',market:'US',layer:'design',themes:['datacenter'],growth:4,vol:3,
+ desc:'チップ設計に必須のEDAツール2強の一角。AIによる設計自動化でも先行。'},
+{id:'CDNS',ticker:'CDNS',name:'ケイデンス',market:'US',layer:'design',themes:['datacenter'],growth:4,vol:3,
+ desc:'EDA2強のもう一角。全ての半導体設計が通る「料金所」ビジネス。'},
+{id:'6526',ticker:'6526',name:'ソシオネクスト',market:'JP',layer:'design',themes:['japan'],growth:3,vol:5,
+ desc:'日本最大のファブレス。車載・データセンター向けカスタムSoC設計。'},
+// ---- 製造 ----
+{id:'TSM',ticker:'TSM',name:'TSMC',market:'US',layer:'fab',themes:['datacenter','japan'],growth:5,vol:3,
+ desc:'最先端ファウンドリをほぼ独占。NVIDIAもAppleもここ無しでは作れない。熊本にJASM。'},
+{id:'INTC',ticker:'INTC',name:'インテル',market:'US',layer:'fab',themes:['datacenter'],growth:3,vol:4,
+ desc:'米政府・NVIDIA出資で再建中。18Aプロセスと米国内製造の地政学価値に賭ける。'},
+{id:'MU',ticker:'MU',name:'マイクロン・テクノロジー',market:'US',layer:'fab',themes:['memory','datacenter'],growth:5,vol:5,
+ desc:'米国唯一のDRAM大手。AI必須のHBMで急成長、メモリスーパーサイクルの主役。'},
+{id:'HYNIX',ticker:'000660(韓)',name:'SKハイニックス',market:'OTHER',layer:'fab',themes:['memory'],growth:5,vol:4,
+ desc:'HBM世界シェア首位。NVIDIAへの主要供給者としてAIメモリ景気を最も享受。'},
+{id:'SAMSUNG',ticker:'005930(韓)',name:'サムスン電子',market:'OTHER',layer:'fab',themes:['memory'],growth:4,vol:3,
+ desc:'メモリ世界最大手＋ファウンドリ2位。HBM巻き返しとテスラ向け受注が焦点。'},
+{id:'285A',ticker:'285A',name:'キオクシアHD',market:'JP',layer:'fab',themes:['memory','japan'],growth:4,vol:5,
+ desc:'NANDフラッシュ発祥・世界大手。AIストレージ需要とメモリ価格上昇の恩恵大。'},
+{id:'SNDK',ticker:'SNDK',name:'サンディスク',market:'US',layer:'fab',themes:['memory'],growth:4,vol:5,
+ desc:'WDから分社したNAND専業。キオクシアと共同生産、メモリ市況回復の好レバレッジ。'},
+{id:'WDC',ticker:'WDC',name:'ウエスタンデジタル',market:'US',layer:'fab',themes:['memory'],growth:4,vol:4,
+ desc:'HDD大手。AIデータセンターの大容量ストレージ（ニアラインHDD）需要が急増。'},
+{id:'STX',ticker:'STX',name:'シーゲイト',market:'US',layer:'fab',themes:['memory'],growth:4,vol:4,
+ desc:'HDD2強の一角。HAMR技術で大容量化をリード、AI時代の「データの倉庫」。'},
+{id:'6723',ticker:'6723',name:'ルネサスエレクトロニクス',market:'JP',layer:'fab',themes:['japan'],growth:3,vol:3,
+ desc:'車載マイコン世界大手。クルマの電動化・知能化で長期成長。'},
+{id:'TXN',ticker:'TXN',name:'テキサス・インスツルメンツ',market:'US',layer:'fab',themes:[],growth:3,vol:2,
+ desc:'アナログ半導体の王者。産業・車載の裾野需要を幅広く享受。'},
+{id:'RAPIDUS',ticker:'非上場',name:'ラピダス（Rapidus）',market:'JP',layer:'fab',themes:['japan'],growth:4,vol:3,
+ desc:'国策2nmファウンドリ。日本半導体帝国再建の象徴。上場したら要注目（現在は投資不可）。'},
+// ---- 装置 ----
+{id:'ASML',ticker:'ASML',name:'ASML',market:'US',layer:'equip',themes:['datacenter'],growth:5,vol:3,
+ desc:'EUV露光装置を世界で唯一作れる会社。最先端チップの生産能力はASMLが決める。'},
+{id:'AMAT',ticker:'AMAT',name:'アプライド・マテリアルズ',market:'US',layer:'equip',themes:['memory'],growth:4,vol:3,
+ desc:'成膜・エッチングなど総合装置世界最大手。GAA・HBMなど新構造化の恩恵。'},
+{id:'LRCX',ticker:'LRCX',name:'ラムリサーチ',market:'US',layer:'equip',themes:['memory'],growth:4,vol:4,
+ desc:'エッチング装置の雄。NAND多層化・DRAM微細化投資に業績が連動。'},
+{id:'KLAC',ticker:'KLAC',name:'KLA',market:'US',layer:'equip',themes:[],growth:4,vol:3,
+ desc:'検査・計測装置で圧倒的シェア。微細化するほど検査需要が増える構造的成長。'},
+{id:'8035',ticker:'8035',name:'東京エレクトロン',market:'JP',layer:'equip',themes:['japan','memory'],growth:5,vol:4,
+ desc:'日本最大の装置メーカー。EUV向け塗布現像装置はシェア約100%。世界4強の一角。'},
+{id:'6857',ticker:'6857',name:'アドバンテスト',market:'JP',layer:'equip',themes:['japan','memory','datacenter'],growth:5,vol:4,
+ desc:'半導体テスタ世界首位。AIチップ・HBMは検査工程が激増＝構造的な追い風。'},
+{id:'6920',ticker:'6920',name:'レーザーテック',market:'JP',layer:'equip',themes:['japan'],growth:4,vol:5,
+ desc:'EUVマスク欠陥検査装置を世界独占。最先端化が進むほど必須になる。'},
+{id:'6146',ticker:'6146',name:'ディスコ',market:'JP',layer:'equip',themes:['japan','memory'],growth:5,vol:4,
+ desc:'ウェハ切断・研削装置で世界シェア7〜8割。HBM積層の薄化研削で需要爆発。'},
+{id:'7735',ticker:'7735',name:'SCREENホールディングス',market:'JP',layer:'equip',themes:['japan'],growth:4,vol:4,
+ desc:'ウェハ洗浄装置で世界首位。歩留まり向上に不可欠な「洗いのプロ」。'},
+{id:'6525',ticker:'6525',name:'KOKUSAI ELECTRIC',market:'JP',layer:'equip',themes:['japan','memory'],growth:4,vol:4,
+ desc:'バッチ式成膜装置で世界トップ級。メモリ設備投資の回復に強く連動。'},
+{id:'7729',ticker:'7729',name:'東京精密',market:'JP',layer:'equip',themes:['japan'],growth:4,vol:4,
+ desc:'ウェハテスト用プローバと精密加工装置。後工程の高度化で存在感上昇。'},
+{id:'6315',ticker:'6315',name:'TOWA',market:'JP',layer:'equip',themes:['japan','memory'],growth:4,vol:5,
+ desc:'半導体封止（モールディング）装置世界首位。HBM封止の圧縮成形技術で独走。'},
+{id:'7731',ticker:'7731',name:'ニコン',market:'JP',layer:'equip',themes:['japan','memory'],growth:3,vol:3,
+ desc:'露光装置の老舗。メモリ向けArF露光や次世代デジタル露光で巻き返しを狙う。'},
+{id:'7751',ticker:'7751',name:'キヤノン',market:'JP',layer:'equip',themes:['japan'],growth:3,vol:2,
+ desc:'ナノインプリントリソグラフィ（NIL）でEUVの対抗軸を狙う。露光の伏兵。'},
+// ---- 材料 ----
+{id:'4063',ticker:'4063',name:'信越化学工業',market:'JP',layer:'material',themes:['japan','memory'],growth:4,vol:3,
+ desc:'シリコンウェハ世界首位。全ての半導体はこの会社のウェハの上に作られる。'},
+{id:'3436',ticker:'3436',name:'SUMCO',market:'JP',layer:'material',themes:['japan','memory'],growth:3,vol:4,
+ desc:'ウェハ専業世界2位。メモリ市況とウェハ価格に業績が素直に連動。'},
+{id:'4186',ticker:'4186',name:'東京応化工業',market:'JP',layer:'material',themes:['japan'],growth:4,vol:3,
+ desc:'フォトレジスト世界首位。EUVレジストでも先行、微細化の要。'},
+{id:'5384',ticker:'5384',name:'フジミインコーポレーテッド',market:'JP',layer:'material',themes:['japan'],growth:4,vol:3,
+ desc:'CMP研磨材の世界大手。多層化・平坦化が進むほど使用量が増える。'},
+{id:'7741',ticker:'7741',name:'HOYA',market:'JP',layer:'material',themes:['japan','memory'],growth:4,vol:2,
+ desc:'EUVマスクブランクスをほぼ独占＋HDD用ガラス基板首位。AIの裏の独占企業。'},
+{id:'4062',ticker:'4062',name:'イビデン',market:'JP',layer:'material',themes:['japan','datacenter'],growth:4,vol:4,
+ desc:'ICパッケージ基板の雄。NVIDIA向け高性能基板サプライヤーとして急成長。'},
+{id:'6967',ticker:'6967',name:'新光電気工業',market:'JP',layer:'material',themes:['japan'],growth:4,vol:4,
+ desc:'パッケージ基板大手。AIチップの大型化・高多層化で単価が上昇。'},
+{id:'4004',ticker:'4004',name:'レゾナック',market:'JP',layer:'material',themes:['japan'],growth:4,vol:4,
+ desc:'後工程材料で世界トップ級の総合化学。HBM接着フィルムなどAI材料の宝庫。'},
+{id:'5201',ticker:'5201',name:'AGC',market:'JP',layer:'material',themes:['japan'],growth:3,vol:3,
+ desc:'EUVマスクブランクスや特殊ガラスを供給。素材の底力で半導体を支える。'},
+// ---- インフラ・電力・光 ----
+{id:'VRT',ticker:'VRT',name:'ヴァーティブ',market:'US',layer:'infra',themes:['datacenter'],growth:5,vol:4,
+ desc:'データセンター電源・液冷の世界大手。GPU高発熱化＝液冷必須化の最大受益者。'},
+{id:'ANET',ticker:'ANET',name:'アリスタ・ネットワークス',market:'US',layer:'infra',themes:['datacenter'],growth:4,vol:4,
+ desc:'AIデータセンター向け高速スイッチの雄。クラウド大手の設備投資に連動。'},
+{id:'SMCI',ticker:'SMCI',name:'スーパー・マイクロ',market:'US',layer:'infra',themes:['datacenter'],growth:3,vol:5,
+ desc:'AIサーバー組立の大手。成長は高いが競争激化・低マージンがリスク。'},
+{id:'VST',ticker:'VST',name:'ビストラ',market:'US',layer:'infra',themes:['datacenter'],growth:4,vol:4,
+ desc:'独立系電力大手。AIデータセンターの電力爆食で「電力＝新しい石油」の代表格。'},
+{id:'CEG',ticker:'CEG',name:'コンステレーション・エナジー',market:'US',layer:'infra',themes:['datacenter'],growth:4,vol:3,
+ desc:'米最大の原子力発電事業者。MSと原発再稼働の長期契約、AI電力の本命。'},
+{id:'GEV',ticker:'GEV',name:'GEベルノバ',market:'US',layer:'infra',themes:['datacenter'],growth:4,vol:3,
+ desc:'ガスタービン・送電網の巨人。電力インフラ増強ブームの中核銘柄。'},
+{id:'5803',ticker:'5803',name:'フジクラ',market:'JP',layer:'infra',themes:['japan','datacenter','optical'],growth:5,vol:4,
+ desc:'データセンター向け光ファイバー・光配線で急成長。株価10倍を達成した実績銘柄。'},
+{id:'5801',ticker:'5801',name:'古河電気工業',market:'JP',layer:'infra',themes:['japan','datacenter','optical'],growth:4,vol:4,
+ desc:'光ファイバーの老舗。AIデータセンター間を結ぶ光通信需要が追い風。'},
+{id:'COHR',ticker:'COHR',name:'コヒレント',market:'US',layer:'infra',themes:['optical','datacenter'],growth:5,vol:4,
+ desc:'光トランシーバ・光部品の世界大手。GPU間接続の光化（光半導体）の中心銘柄。'},
+{id:'LITE',ticker:'LITE',name:'ルーメンタム',market:'US',layer:'infra',themes:['optical','datacenter'],growth:4,vol:4,
+ desc:'光通信モジュール大手。CPO（コパッケージドオプティクス）時代の有力株。'},
+{id:'9432',ticker:'9432',name:'NTT',market:'JP',layer:'infra',themes:['optical','japan'],growth:3,vol:1,
+ desc:'光電融合「IOWN」を推進。電気を光に置き換える国家級プロジェクトの本丸。'},
+// ---- ロボティクス ----
+{id:'TSLA',ticker:'TSLA',name:'テスラ',market:'US',layer:'robotics',themes:['robotics'],growth:4,vol:4,
+ desc:'ヒューマノイド「Optimus」とFSD。AIロボティクスの最有力プレイヤー。'},
+{id:'ISRG',ticker:'ISRG',name:'インテュイティブ・サージカル',market:'US',layer:'robotics',themes:['robotics'],growth:4,vol:2,
+ desc:'手術支援ロボ「ダヴィンチ」で独占。医療×ロボの王者。'},
+{id:'SYM',ticker:'SYM',name:'シンボティック',market:'US',layer:'robotics',themes:['robotics'],growth:4,vol:5,
+ desc:'倉庫自動化AIロボット。ウォルマートが主要顧客で物流革命を推進。'},
+{id:'6954',ticker:'6954',name:'ファナック',market:'JP',layer:'robotics',themes:['robotics','japan'],growth:3,vol:3,
+ desc:'産業用ロボット世界大手。工場自動化の世界的リバイバルで恩恵。'},
+{id:'6506',ticker:'6506',name:'安川電機',market:'JP',layer:'robotics',themes:['robotics','japan'],growth:3,vol:3,
+ desc:'サーボモータ・ロボットの雄。ヒューマノイドの「筋肉」を担う技術を持つ。'},
+{id:'6861',ticker:'6861',name:'キーエンス',market:'JP',layer:'robotics',themes:['robotics','japan'],growth:4,vol:2,
+ desc:'FAセンサで営業利益率50%超。自動化が進むほど儲かる日本最強クラスの企業。'},
+{id:'6324',ticker:'6324',name:'ハーモニック・ドライブ',market:'JP',layer:'robotics',themes:['robotics','japan'],growth:4,vol:4,
+ desc:'精密減速機で世界シェア首位級。ヒューマノイドの「関節」を独占的に供給。'},
+// ---- 量子 ----
+{id:'IONQ',ticker:'IONQ',name:'イオンキュー',market:'US',layer:'quantum',themes:['quantum'],growth:4,vol:5,
+ desc:'イオントラップ方式の量子計算のリーダー。量子ネットワークへも拡大。'},
+{id:'RGTI',ticker:'RGTI',name:'リゲッティ・コンピューティング',market:'US',layer:'quantum',themes:['quantum'],growth:3,vol:5,
+ desc:'超伝導方式の量子コンピュータ開発。ハイリスク・ハイリターンの純粋量子株。'},
+{id:'QBTS',ticker:'QBTS',name:'ディーウェーブ・クアンタム',market:'US',layer:'quantum',themes:['quantum'],growth:3,vol:5,
+ desc:'量子アニーリング方式で商用化先行。最適化問題に強み。'},
+{id:'IBM',ticker:'IBM',name:'IBM',market:'US',layer:'quantum',themes:['quantum'],growth:3,vol:2,
+ desc:'量子ロードマップ最先発の巨人。2029年に誤り耐性量子コンピュータを計画。'},
+{id:'3687',ticker:'3687',name:'フィックスターズ',market:'JP',layer:'quantum',themes:['quantum','japan'],growth:3,vol:4,
+ desc:'高速化ソフトの専門家集団。量子コンピュータ向けソフトで日本の先駆け。'},
+];
+
+/* ============================================================
+   都市プリセット（旅行マップ用）
+============================================================ */
+const CITIES = [
+ {city:'ソウル',country:'韓国',flag:'🇰🇷',lat:37.5,lon:127.0},
+ {city:'釜山',country:'韓国',flag:'🇰🇷',lat:35.2,lon:129.1},
+ {city:'台北',country:'台湾',flag:'🇹🇼',lat:25.0,lon:121.5},
+ {city:'香港',country:'香港',flag:'🇭🇰',lat:22.3,lon:114.2},
+ {city:'上海',country:'中国',flag:'🇨🇳',lat:31.2,lon:121.5},
+ {city:'北京',country:'中国',flag:'🇨🇳',lat:39.9,lon:116.4},
+ {city:'バンコク',country:'タイ',flag:'🇹🇭',lat:13.7,lon:100.5},
+ {city:'プーケット',country:'タイ',flag:'🇹🇭',lat:7.9,lon:98.4},
+ {city:'シンガポール',country:'シンガポール',flag:'🇸🇬',lat:1.35,lon:103.8},
+ {city:'クアラルンプール',country:'マレーシア',flag:'🇲🇾',lat:3.1,lon:101.7},
+ {city:'ホーチミン',country:'ベトナム',flag:'🇻🇳',lat:10.8,lon:106.7},
+ {city:'ハノイ',country:'ベトナム',flag:'🇻🇳',lat:21.0,lon:105.8},
+ {city:'マニラ',country:'フィリピン',flag:'🇵🇭',lat:14.6,lon:121.0},
+ {city:'セブ島',country:'フィリピン',flag:'🇵🇭',lat:10.3,lon:123.9},
+ {city:'バリ島',country:'インドネシア',flag:'🇮🇩',lat:-8.4,lon:115.2},
+ {city:'グアム',country:'アメリカ',flag:'🇺🇸',lat:13.5,lon:144.8},
+ {city:'ホノルル',country:'アメリカ',flag:'🇺🇸',lat:21.3,lon:-157.8},
+ {city:'ロサンゼルス',country:'アメリカ',flag:'🇺🇸',lat:34.0,lon:-118.2},
+ {city:'サンフランシスコ',country:'アメリカ',flag:'🇺🇸',lat:37.7,lon:-122.4},
+ {city:'ラスベガス',country:'アメリカ',flag:'🇺🇸',lat:36.2,lon:-115.1},
+ {city:'ニューヨーク',country:'アメリカ',flag:'🇺🇸',lat:40.7,lon:-74.0},
+ {city:'バンクーバー',country:'カナダ',flag:'🇨🇦',lat:49.3,lon:-123.1},
+ {city:'カンクン',country:'メキシコ',flag:'🇲🇽',lat:21.2,lon:-86.8},
+ {city:'リオデジャネイロ',country:'ブラジル',flag:'🇧🇷',lat:-22.9,lon:-43.2},
+ {city:'ロンドン',country:'イギリス',flag:'🇬🇧',lat:51.5,lon:-0.1},
+ {city:'パリ',country:'フランス',flag:'🇫🇷',lat:48.9,lon:2.35},
+ {city:'ローマ',country:'イタリア',flag:'🇮🇹',lat:41.9,lon:12.5},
+ {city:'バルセロナ',country:'スペイン',flag:'🇪🇸',lat:41.4,lon:2.2},
+ {city:'ベルリン',country:'ドイツ',flag:'🇩🇪',lat:52.5,lon:13.4},
+ {city:'アムステルダム',country:'オランダ',flag:'🇳🇱',lat:52.4,lon:4.9},
+ {city:'イスタンブール',country:'トルコ',flag:'🇹🇷',lat:41.0,lon:29.0},
+ {city:'ドバイ',country:'UAE',flag:'🇦🇪',lat:25.2,lon:55.3},
+ {city:'カイロ',country:'エジプト',flag:'🇪🇬',lat:30.0,lon:31.2},
+ {city:'ケープタウン',country:'南アフリカ',flag:'🇿🇦',lat:-33.9,lon:18.4},
+ {city:'モルディブ',country:'モルディブ',flag:'🇲🇻',lat:4.2,lon:73.5},
+ {city:'デリー',country:'インド',flag:'🇮🇳',lat:28.6,lon:77.2},
+ {city:'シドニー',country:'オーストラリア',flag:'🇦🇺',lat:-33.9,lon:151.2},
+ {city:'ケアンズ',country:'オーストラリア',flag:'🇦🇺',lat:-16.9,lon:145.8},
+ {city:'オークランド',country:'ニュージーランド',flag:'🇳🇿',lat:-36.8,lon:174.8},
+];
+
+/* ============================================================
+   状態管理
+============================================================ */
+const LEGACY_KEY='investTracker_v1';
+let currentUser=null;
+let S = defaultState();
+function defaultState(){
+  return {totalAssets:0, allocations:{}, custom:[], records:[], events:[], visited:[], filterTheme:'all', filterMarket:'all', viewMode:'auto', updatedAt:0};
+}
+function storageKey(){ return 'investTracker_v1_u_'+currentUser; }
+function load(){
+  try{ const d=JSON.parse(localStorage.getItem(storageKey())); if(d) return Object.assign(defaultState(),d); }catch(e){}
+  // 旧バージョン（ログイン導入前）のデータは初回ログイン時に引き継ぐ
+  try{ const l=JSON.parse(localStorage.getItem(LEGACY_KEY)); if(l){ const d=Object.assign(defaultState(),l); d.updatedAt=Date.now(); return d; } }catch(e){}
+  return defaultState();
+}
+function save(){
+  if(!currentUser) return;
+  S.updatedAt=Date.now();
+  localStorage.setItem(storageKey(), JSON.stringify(S));
+  schedulePush();
+}
+
+/* ============================================================
+   サーバー同期（同じユーザーネーム＝PC・スマホでデータ共有）
+   同期サーバーが見つからない場合は端末内保存のみで動作
+============================================================ */
+let pushT=null;
+function setSync(st){
+  const dot=document.getElementById('syncDot'); if(!dot) return;
+  dot.className='sdot '+st;
+  dot.title=st==='ok'?'サーバーと同期済み':st==='saving'?'同期中…':'オフライン（この端末にのみ保存中）';
+}
+function schedulePush(){ clearTimeout(pushT); pushT=setTimeout(pushToServer,600); }
+async function pushToServer(){
+  if(!currentUser) return;
+  try{
+    setSync('saving');
+    const r=await fetch('api/save?user='+encodeURIComponent(currentUser),{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(S)});
+    if(!r.ok) throw 0;
+    setSync('ok');
+  }catch(e){ setSync('off'); }
+}
+async function pullFromServer(){
+  if(!currentUser) return;
+  try{
+    const r=await fetch('api/load?user='+encodeURIComponent(currentUser),{cache:'no-store'});
+    if(!r.ok) throw 0;
+    const remote=await r.json();
+    if(remote && remote.updatedAt && remote.updatedAt>(S.updatedAt||0)){
+      // サーバー側（他の端末で更新）が新しい → 取り込む
+      S=Object.assign(defaultState(),remote);
+      localStorage.setItem(storageKey(), JSON.stringify(S));
+      updateVmButtons(); renderAll();
+    }else if((S.updatedAt||0)>(remote.updatedAt||0)){
+      return pushToServer();
+    }
+    setSync('ok');
+  }catch(e){ setSync('off'); }
+}
+setInterval(pullFromServer, 60000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) pullFromServer(); });
+
+/* ============================================================
+   ログイン
+============================================================ */
+function showLogin(){
+  document.getElementById('loginBg').classList.add('open');
+  setTimeout(()=>document.getElementById('loginName').focus(),60);
+}
+function loginSubmit(){
+  const n=document.getElementById('loginName').value.trim();
+  if(!n) return alert('ユーザーネームを入力してください');
+  doLogin(n);
+}
+function doLogin(name){
+  currentUser=name;
+  localStorage.setItem('investTracker_lastUser',name);
+  S=load();
+  localStorage.setItem(storageKey(), JSON.stringify(S));
+  document.getElementById('loginBg').classList.remove('open');
+  const chip=document.getElementById('userChip');
+  chip.style.display='flex';
+  document.getElementById('userNameLbl').textContent=name;
+  updateVmButtons(); renderAll();
+  pullFromServer();
+}
+function logout(){
+  localStorage.removeItem('investTracker_lastUser');
+  location.reload();
+}
+function yen(n){ return '¥'+Math.round(n).toLocaleString('ja-JP'); }
+function allCompanies(){ return [...COMPANIES, ...S.custom]; }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function mkFlag(m){ return m==='JP'?'🇯🇵':m==='US'?'🇺🇸':'🌐'; }
+function stars(g){ return '★'.repeat(g)+'☆'.repeat(5-g); }
+function layerOf(id){ return ALL_LAYERS.find(l=>l.id===id) || ALL_LAYERS[0]; }
+function volOf(c){ return Math.min(5,Math.max(1,c.vol||3)); }
+
+/* ============================================================
+   表示モード（PC / スマホ切替）
+============================================================ */
+function effMode(){
+  const vm=S.viewMode||'auto';
+  if(vm==='auto') return window.innerWidth<700?'sp':'pc';
+  return vm;
+}
+document.querySelectorAll('#viewmode button').forEach(b=>{
+  b.onclick=()=>{
+    S.viewMode=b.dataset.vm; save();
+    document.querySelectorAll('#viewmode button').forEach(x=>x.classList.toggle('on',x===b));
+    document.body.dataset.view=S.viewMode;
+    renderAll();
+  };
+});
+let rsT=null;
+window.addEventListener('resize',()=>{
+  if((S.viewMode||'auto')!=='auto') return;
+  clearTimeout(rsT); rsT=setTimeout(renderPyramidAndSides,200);
+});
+
+/* ============================================================
+   タブ
+============================================================ */
+document.querySelectorAll('.tab-btn').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('page-'+b.dataset.tab).classList.add('active');
+    renderAll();
+  };
+});
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function scrollToLayer(id){ const el=document.getElementById('sec-'+id); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
+
+/* ============================================================
+   ピラミッド描画（PC: SVG発光ピラミッド ／ SP: ネオンファネル）
+============================================================ */
+function countByLayer(id){ return allCompanies().filter(c=>c.layer===id).length; }
+function allocLayerTotal(id){
+  return allCompanies().filter(c=>c.layer===id).reduce((s,c)=>s+(S.allocations[c.id]||0),0);
+}
+function renderPyramidAndSides(){
+  const p=document.getElementById('pyramid');
+  if(effMode()==='sp') p.innerHTML=funnelHTML();
+  else p.innerHTML=pyramidSVG();
+  // サイドブロック
+  const sb=document.getElementById('sideBlocks'); sb.innerHTML='';
+  SIDE_LAYERS.forEach(L=>{
+    const total=allocLayerTotal(L.id);
+    const d=document.createElement('div');
+    d.className='side'; d.style.setProperty('--sc',L.colorRaw);
+    d.innerHTML=`<b>◈ ${esc(L.name)}</b><small>${esc(L.sub)} ｜ ${countByLayer(L.id)}社</small><br>
+      <span class="samt">${total>0?'配分 '+yen(total):'配分なし'}</span>`;
+    d.onclick=()=>scrollToLayer(L.id);
+    sb.appendChild(d);
+  });
+}
+function pyramidSVG(){
+  const W=1040,H=560,top=26,bot=546,cx=320,baseHalf=290,n=LAYERS.length,gap=4;
+  const totalAlloc=LAYERS.reduce((s,L)=>s+allocLayerTotal(L.id),0);
+  let g=`<defs>
+    <filter id="pglow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>`;
+  LAYERS.forEach((L,i)=>{
+    g+=`<linearGradient id="pg${i}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${L.colorRaw}" stop-opacity=".95"/>
+      <stop offset="1" stop-color="${L.colorRaw}" stop-opacity=".45"/></linearGradient>`;
+  });
+  g+='</defs>';
+  const hUnit=(bot-top)/n;
+  LAYERS.forEach((L,i)=>{
+    const y0=top+i*hUnit+(i?gap:0), y1=top+(i+1)*hUnit;
+    const h0=(y0-top)/(bot-top)*baseHalf, h1=(y1-top)/(bot-top)*baseHalf;
+    const midY=(y0+y1)/2;
+    const total=allocLayerTotal(L.id);
+    const pct=totalAlloc>0&&total>0?` (${(total/totalAlloc*100).toFixed(0)}%)`:'';
+    // スライス本体
+    g+=`<g class="slice" onclick="scrollToLayer('${L.id}')">
+      <polygon points="${cx-h0},${y0} ${cx+h0},${y0} ${cx+h1},${y1} ${cx-h1},${y1}"
+        fill="url(#pg${i})" stroke="${L.colorRaw}" stroke-width="1.4" filter="url(#pglow)"/>
+      ${i>0?`<text x="${cx}" y="${midY+5}" text-anchor="middle" fill="#04101f" font-size="14" font-weight="800">${esc(L.name)}</text>`:''}
+      ${i===0?`<text x="${cx}" y="${midY+5}" text-anchor="middle" fill="#04101f" font-size="11.5" font-weight="800">AI</text>`:''}
+    </g>`;
+    // リーダー線＋右側ラベル（配分資産額）
+    const lx0=cx+Math.max(h1,60)+14, lx1=672;
+    g+=`<line x1="${lx0}" y1="${midY}" x2="${lx1}" y2="${midY}" stroke="${L.colorRaw}" stroke-width="1" stroke-dasharray="3,4" opacity=".7"/>
+      <circle cx="${lx1}" cy="${midY}" r="3.4" fill="${L.colorRaw}" filter="url(#pglow)"/>
+      <g class="slice" onclick="scrollToLayer('${L.id}')">
+        <text x="${lx1+14}" y="${midY-8}" fill="${L.colorRaw}" font-size="16" class="lbl-name">${esc(L.name)}<tspan fill="#7e93b8" font-size="11" font-weight="400">　${esc(L.sub)}</tspan></text>
+        <text x="${lx1+14}" y="${midY+13}" fill="#7e93b8" font-size="11.5">${countByLayer(L.id)}社 ｜ 配分 <tspan fill="#ffd166" font-weight="800" font-size="13.5">${total>0?yen(total):'—'}</tspan><tspan fill="#7e93b8" font-size="10.5">${pct}</tspan></text>
+      </g>`;
+  });
+  // 川下/川上ガイド
+  g+=`<text x="${cx-baseHalf-14}" y="${top+16}" fill="#7e93b8" font-size="11" text-anchor="end">川下 ▲</text>
+      <text x="${cx-baseHalf-14}" y="${bot-4}" fill="#7e93b8" font-size="11" text-anchor="end">川上 ▼</text>`;
+  return `<svg class="pyr-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
+function funnelHTML(){
+  const totalAlloc=LAYERS.reduce((s,L)=>s+allocLayerTotal(L.id),0);
+  let h='<div class="funnel">';
+  LAYERS.forEach((L,i)=>{
+    const w=55+i*9; // 55%→100%
+    const total=allocLayerTotal(L.id);
+    const pct=totalAlloc>0&&total>0?`(${(total/totalAlloc*100).toFixed(0)}%)`:'';
+    h+=`<div class="frow">
+      <div class="fbar" style="width:${w}%;background:linear-gradient(135deg,${L.colorRaw},${L.colorRaw}99);" onclick="scrollToLayer('${L.id}')">
+        <b>${esc(L.name)}</b><small>${esc(L.sub)}・${countByLayer(L.id)}社</small>
+      </div>
+      <div class="famt">${total>0?yen(total):'—'}<br><span style="color:var(--sub);font-weight:400;font-size:9px;">${pct}</span></div>
+    </div>`;
+  });
+  return h+'</div>';
+}
+
+/* ============================================================
+   フィルタ＆企業カード
+============================================================ */
+function renderFilters(){
+  const tf=document.getElementById('themeFilters');
+  tf.innerHTML='';
+  const mk=(id,name,group)=>{
+    const c=document.createElement('div');
+    c.className='chip'+((group==='theme'?S.filterTheme:S.filterMarket)===id?' on':'');
+    c.textContent=name;
+    c.onclick=()=>{ if(group==='theme')S.filterTheme=id; else S.filterMarket=id; save(); renderAll(); };
+    return c;
+  };
+  tf.appendChild(mk('all','🎬 全テーマ','theme'));
+  THEMES.forEach(t=>tf.appendChild(mk(t.id,t.name,'theme')));
+  const mf=document.getElementById('marketFilters');
+  mf.innerHTML='';
+  [['all','🌏 すべて'],['JP','🇯🇵 日本株'],['US','🇺🇸 米国株'],['OTHER','🌐 その他']].forEach(([id,nm])=>mf.appendChild(mk(id,nm,'market')));
+}
+function renderCompanies(){
+  const wrap=document.getElementById('layerSections'); wrap.innerHTML='';
+  ALL_LAYERS.forEach(L=>{
+    let list=allCompanies().filter(c=>c.layer===L.id);
+    if(S.filterTheme!=='all') list=list.filter(c=>(c.themes||[]).includes(S.filterTheme));
+    if(S.filterMarket!=='all') list=list.filter(c=>c.market===S.filterMarket);
+    if(!list.length) return;
+    const sec=document.createElement('div'); sec.className='layer-sec'; sec.id='sec-'+L.id;
+    sec.innerHTML=`<div class="layer-head"><span class="dot" style="background:${L.colorRaw};color:${L.colorRaw}"></span>${esc(L.name)}<span class="muted" style="font-weight:400">${esc(L.sub)}</span></div>
+      <div class="layer-desc">${esc(L.desc)}</div>`;
+    const grid=document.createElement('div'); grid.className='cards';
+    list.forEach(c=>{
+      const alloc=S.allocations[c.id]||0;
+      const card=document.createElement('div');
+      card.className='co-card'; card.style.borderLeftColor=L.colorRaw;
+      card.innerHTML=`
+        ${alloc>0?`<div class="alloc-tag">${yen(alloc)}</div>`:''}
+        <div class="tick"><span class="mkflag">${mkFlag(c.market)}</span> ${esc(c.ticker)}</div>
+        <div class="nm">${esc(c.name)}</div>
+        <div class="bs">${esc(c.desc)}</div>
+        <div class="metrics"><span class="gw">成長 ${stars(c.growth)}</span><span class="vl">ボラ ${stars(volOf(c))}</span></div>
+        <div class="theme-tags">${(c.themes||[]).map(t=>{const th=THEMES.find(x=>x.id===t);return th?`<span class="ttag">${esc(th.name)}</span>`:''}).join('')}${c.isCustom?'<span class="ttag" style="color:var(--green);border-color:rgba(52,245,162,.4)">自分で追加</span>':''}</div>`;
+      card.onclick=()=>openCompany(c.id);
+      grid.appendChild(card);
+    });
+    sec.appendChild(grid);
+    wrap.appendChild(sec);
+  });
+}
+
+/* ============================================================
+   企業詳細モーダル（配分設定）
+============================================================ */
+function openCompany(id){
+  const c=allCompanies().find(x=>x.id===id); if(!c) return;
+  const L=layerOf(c.layer);
+  const alloc=S.allocations[id]||0;
+  const m=document.getElementById('coModal');
+  m.innerHTML=`
+    <span class="close-x" onclick="closeModal('coModalBg')">✕</span>
+    <div class="tick" style="color:var(--sub);font-size:12px;">${mkFlag(c.market)} ${esc(c.ticker)} ｜ <span style="color:${L.colorRaw}">${esc(L.name)}</span></div>
+    <h2>${esc(c.name)}</h2>
+    <div class="metrics" style="margin:8px 0;font-size:13px;">
+      <span class="gw">成長性 ${stars(c.growth)}</span>
+      <span class="vl">ボラティリティ ${stars(volOf(c))}</span>
+    </div>
+    <p class="muted" style="font-size:10.5px;margin-bottom:8px;">※ボラティリティ＝過去の値動きの荒さ（★多い＝ハイリスク・ハイリターン）</p>
+    <p style="font-size:13px;line-height:1.8;color:var(--txt);">${esc(c.desc)}</p>
+    <div class="theme-tags" style="margin:10px 0;">${(c.themes||[]).map(t=>{const th=THEMES.find(x=>x.id===t);return th?`<span class="ttag">${esc(th.name)}</span>`:''}).join('')}</div>
+    <hr style="border-color:rgba(56,189,248,.2);margin:14px 0;">
+    <h3>💰 この企業への配分額</h3>
+    <div class="row">
+      <input type="number" id="allocInput" value="${alloc||''}" placeholder="配分額（円）" style="width:170px;">
+      <button class="act" onclick="setAlloc('${esc(c.id)}')">設定</button>
+      ${alloc>0?`<button class="act danger" onclick="setAllocZero('${esc(c.id)}')">配分を外す</button>`:''}
+    </div>
+    <p class="muted" style="margin-top:8px;">未配分の余力：<b>${yen(remainAmount())}</b></p>
+    ${c.isCustom?`<button class="act danger" style="margin-top:14px;" onclick="deleteCustom('${esc(c.id)}')">🗑 この企業を削除</button>`:''}
+  `;
+  document.getElementById('coModalBg').classList.add('open');
+}
+function remainAmount(){
+  const used=Object.values(S.allocations).reduce((s,v)=>s+v,0);
+  return S.totalAssets-used;
+}
+function setAlloc(id){
+  const v=Number(document.getElementById('allocInput').value)||0;
+  if(v<0) return alert('0以上で入力してください');
+  if(v===0) delete S.allocations[id]; else S.allocations[id]=v;
+  save(); closeModal('coModalBg'); renderAll();
+}
+function setAllocZero(id){ delete S.allocations[id]; save(); closeModal('coModalBg'); renderAll(); }
+
+/* ============================================================
+   企業追加
+============================================================ */
+function openAddCompany(){
+  const sel=document.getElementById('addLayer');
+  sel.innerHTML=ALL_LAYERS.map(l=>`<option value="${l.id}">${esc(l.name)}（${esc(l.sub)}）</option>`).join('');
+  document.getElementById('addModalBg').classList.add('open');
+}
+function addCustomCompany(){
+  const t=document.getElementById('addTicker').value.trim();
+  const n=document.getElementById('addName').value.trim();
+  if(!n) return alert('企業名を入力してください');
+  const g=Math.min(5,Math.max(1,Number(document.getElementById('addGrowth').value)||3));
+  const v=Math.min(5,Math.max(1,Number(document.getElementById('addVol').value)||3));
+  S.custom.push({
+    id:'custom_'+Date.now(), ticker:t||'-', name:n,
+    market:document.getElementById('addMarket').value,
+    layer:document.getElementById('addLayer').value,
+    themes:[], growth:g, vol:v, isCustom:true,
+    desc:document.getElementById('addDesc').value.trim()||'（メモなし）',
+  });
+  save();
+  ['addTicker','addName','addGrowth','addVol','addDesc'].forEach(i=>document.getElementById(i).value='');
+  closeModal('addModalBg'); renderAll();
+}
+function deleteCustom(id){
+  if(!confirm('この企業を削除しますか？')) return;
+  S.custom=S.custom.filter(c=>c.id!==id);
+  delete S.allocations[id];
+  save(); closeModal('coModalBg'); renderAll();
+}
+
+/* ============================================================
+   配分ページ
+============================================================ */
+function saveTotalAssets(){
+  S.totalAssets=Number(document.getElementById('totalAssetsInput').value)||0;
+  save(); renderAll();
+}
+function renderAlloc(){
+  document.getElementById('totalAssetsInput').value=S.totalAssets||'';
+  const used=Object.values(S.allocations).reduce((s,v)=>s+v,0);
+  document.getElementById('stTotal').textContent=yen(S.totalAssets);
+  document.getElementById('stAllocated').textContent=yen(used);
+  document.getElementById('stRemain').textContent=yen(S.totalAssets-used);
+  document.getElementById('stCount').textContent=Object.keys(S.allocations).length+'銘柄';
+
+  const wrap=document.getElementById('allocBars'); wrap.innerHTML='';
+  const entries=Object.entries(S.allocations)
+    .map(([id,v])=>({c:allCompanies().find(x=>x.id===id),v})).filter(e=>e.c)
+    .sort((a,b)=>b.v-a.v);
+  document.getElementById('allocEmpty').style.display=entries.length?'none':'block';
+  const max=Math.max(...entries.map(e=>e.v),1);
+  entries.forEach(e=>{
+    const L=layerOf(e.c.layer);
+    const pct=S.totalAssets>0?(e.v/S.totalAssets*100).toFixed(1):'-';
+    const row=document.createElement('div'); row.className='bar-row';
+    row.innerHTML=`<div class="lbl">${mkFlag(e.c.market)} ${esc(e.c.name)}</div>
+      <div class="bar"><i style="width:${e.v/max*100}%;background:${L.colorRaw};color:${L.colorRaw}"></i></div>
+      <div class="amt">${yen(e.v)} <span class="muted">(${pct}%)</span></div>`;
+    row.style.cursor='pointer'; row.onclick=()=>openCompany(e.c.id);
+    wrap.appendChild(row);
+  });
+
+  const lw=document.getElementById('layerBars'); lw.innerHTML='';
+  const layerTotals=ALL_LAYERS.map(L=>({L,v:allocLayerTotal(L.id)})).filter(x=>x.v>0);
+  const lmax=Math.max(...layerTotals.map(x=>x.v),1);
+  if(!layerTotals.length) lw.innerHTML='<p class="muted">配分するとここに階層別バランスが表示されます。</p>';
+  layerTotals.forEach(({L,v})=>{
+    const row=document.createElement('div'); row.className='bar-row';
+    row.innerHTML=`<div class="lbl">${esc(L.name)}</div>
+      <div class="bar"><i style="width:${v/lmax*100}%;background:${L.colorRaw};color:${L.colorRaw}"></i></div>
+      <div class="amt">${yen(v)}</div>`;
+    lw.appendChild(row);
+  });
+}
+
+/* ============================================================
+   資産推移（旅行資金ページのイベントから自動生成）
+   gain=株の利確(+) / loss=株の損失(−) / travel=旅行支出(−)
+   ・株の累計損益   = Σ(gain − loss)
+   ・旅行クレジット = Σ(gain − loss − travel)
+============================================================ */
+function stockEvents(){
+  // 株の損益に関わるイベント（利確・損失）を日付順に
+  return [...S.events].filter(e=>e.type==='gain'||e.type==='loss')
+    .sort((a,b)=> a.date===b.date ? a.id-b.id : a.date.localeCompare(b.date));
+}
+function stockTimeline(){
+  // 利確・損失・旅行をすべて時系列に並べ、累計損益とクレジット残高を計算
+  const evs=[...S.events].sort((a,b)=> a.date===b.date ? a.id-b.id : a.date.localeCompare(b.date));
+  let pl=0, credit=0; const pts=[];
+  evs.forEach(e=>{
+    if(e.type==='gain'){ pl+=e.amount; credit+=e.amount; }
+    else if(e.type==='loss'){ pl-=e.amount; credit-=e.amount; }
+    else if(e.type==='travel'){ credit-=e.amount; }
+    else return;
+    pts.push({date:e.date, pl, credit, ev:e});
+  });
+  return pts;
+}
+function renderAssetPage(){
+  const gain=S.events.filter(e=>e.type==='gain').reduce((s,e)=>s+e.amount,0);
+  const loss=S.events.filter(e=>e.type==='loss').reduce((s,e)=>s+e.amount,0);
+  const travel=S.events.filter(e=>e.type==='travel').reduce((s,e)=>s+e.amount,0);
+  const net=gain-loss;
+  document.getElementById('stGain').textContent='+'+yen(gain);
+  document.getElementById('stLoss').textContent='−'+yen(loss);
+  const netEl=document.getElementById('stNetPL');
+  netEl.textContent=(net>=0?'+':'−')+yen(Math.abs(net));
+  netEl.style.color=net>=0?'var(--green)':'var(--red)';
+  document.getElementById('stAssetTravel').textContent='−'+yen(travel);
+
+  // 損益ログ（利確・損失のみ、累計付き）
+  const tb=document.querySelector('#plTable tbody'); tb.innerHTML='';
+  const evs=stockEvents();
+  document.getElementById('plEmpty').style.display=evs.length?'none':'block';
+  let cum=0; const rows=[];
+  evs.forEach(e=>{ cum+= e.type==='gain'?e.amount:-e.amount; rows.push({e,cum}); });
+  rows.reverse().forEach(({e,cum})=>{
+    const isGain=e.type==='gain';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${esc(e.date)}</td>
+      <td>${isGain?'📈 利確':'📉 損失'}</td>
+      <td style="text-align:left;">${esc(e.memo||'-')}</td>
+      <td style="color:${isGain?'var(--green)':'var(--red)'};font-weight:700;">${isGain?'+':'−'}${yen(e.amount)}</td>
+      <td style="color:${cum>=0?'var(--cyan)':'var(--red)'};font-weight:700;">${cum>=0?'+':'−'}${yen(Math.abs(cum))}</td>
+      <td><span style="color:var(--red);cursor:pointer;font-weight:800;" onclick="delEvent(${e.id})">✕</span></td>`;
+    tb.appendChild(tr);
+  });
+  drawAssetChart();
+}
+function drawAssetChart(){
+  const el=document.getElementById('assetChart');
+  const pts=stockTimeline();
+  if(pts.length<1){ el.innerHTML='<p class="muted">「旅行資金＆世界地図」ページで株の利確・損失を記録すると、株の資産推移グラフがここに自動で表示されます。</p>'; return; }
+  const W=1000,H=380,padL=82,padR=20,padT=20,padB=46;
+  const series=[
+    {key:p=>p.pl, color:'#22d3ee', width:3, label:'株の累計損益'},
+    {key:p=>p.credit, color:'#ffd166', width:2, label:'旅行クレジット残高', dash:'5,4'},
+  ];
+  // 起点0を先頭に加える（累計の立ち上がりを見せる）
+  const data=[{date:'開始',pl:0,credit:0,zero:true},...pts];
+  let vmax=0,vmin=0;
+  data.forEach(p=>series.forEach(s=>{const v=s.key(p); vmax=Math.max(vmax,v); vmin=Math.min(vmin,v);}));
+  const span=(vmax-vmin)||1; vmax+=span*0.1; vmin-=span*0.1;
+  const x=i=>data.length===1?(padL+W-padR)/2:padL+(W-padL-padR)*i/(data.length-1);
+  const y=v=>padT+(H-padT-padB)*(1-(v-vmin)/(vmax-vmin));
+  let g='';
+  for(let k=0;k<=4;k++){
+    const v=vmin+(vmax-vmin)*k/4, yy=y(v);
+    g+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="rgba(56,189,248,.15)" stroke-width="1"/>`;
+    g+=`<text x="${padL-8}" y="${yy+4}" fill="#7e93b8" font-size="11" text-anchor="end">${(v/10000).toFixed(1)}万</text>`;
+  }
+  if(vmin<0&&vmax>0) g+=`<line x1="${padL}" y1="${y(0)}" x2="${W-padR}" y2="${y(0)}" stroke="#7e93b8" stroke-width="1.4" stroke-dasharray="3,3"/>`;
+  data.forEach((p,i)=>{
+    if(data.length<=9 || i%Math.ceil(data.length/9)===0 || i===data.length-1)
+      g+=`<text x="${x(i)}" y="${H-14}" fill="#7e93b8" font-size="11" text-anchor="middle">${p.zero?'開始':p.date.slice(2).replace(/-/g,'/')}</text>`;
+  });
+  series.forEach(s=>{
+    const pts2=data.map((p,i)=>`${x(i)},${y(s.key(p))}`).join(' ');
+    g+=`<polyline points="${pts2}" fill="none" stroke="${s.color}" stroke-width="${s.width}" ${s.dash?`stroke-dasharray="${s.dash}"`:''} stroke-linejoin="round"/>`;
+    data.forEach((p,i)=>{
+      const memo=p.zero?'':(p.ev&&p.ev.memo?' '+p.ev.memo:'');
+      g+=`<circle cx="${x(i)}" cy="${y(s.key(p))}" r="3.4" fill="${s.color}"><title>${p.zero?'開始':p.date}${memo} ｜ ${s.label}: ${s.key(p)>=0?'+':'−'}${yen(Math.abs(s.key(p)))}</title></circle>`;
+    });
+  });
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${g}</svg>`;
+}
+
+/* ============================================================
+   旅行資金＆イベント
+============================================================ */
+function addEvent(){
+  const amt=Number(document.getElementById('evAmount').value)||0;
+  if(amt<=0) return alert('金額を入力してください');
+  S.events.push({
+    id:Date.now(),
+    type:document.getElementById('evType').value,
+    date:document.getElementById('evDate').value||new Date().toISOString().slice(0,10),
+    amount:amt,
+    memo:document.getElementById('evMemo').value.trim(),
+  });
+  S.events.sort((a,b)=>a.date.localeCompare(b.date));
+  save();
+  document.getElementById('evAmount').value=''; document.getElementById('evMemo').value='';
+  renderAll();
+}
+function delEvent(id){
+  if(!confirm('この記録を削除しますか？')) return;
+  S.events=S.events.filter(e=>e.id!==id); save(); renderAll();
+}
+function travelStats(){
+  const gain=S.events.filter(e=>e.type==='gain').reduce((s,e)=>s+e.amount,0);
+  const loss=S.events.filter(e=>e.type==='loss').reduce((s,e)=>s+e.amount,0);
+  const spent=S.events.filter(e=>e.type==='travel').reduce((s,e)=>s+e.amount,0);
+  // 旅行に使えるのは「株の純利益（利確−損失）」から旅行支出を引いた残り
+  return {gain, loss, spent, credit:gain-loss-spent};
+}
+function renderTravel(){
+  const {gain,spent,credit}=travelStats();
+  document.getElementById('travelCredit').textContent=yen(credit);
+  const msgs=[
+    [500000,'🌟 ヨーロッパ周遊もアメリカ横断も行ける！世界はキミのもの！'],
+    [300000,'🏝 ハワイでもヨーロッパでも選び放題！！'],
+    [150000,'✈️ 韓国・台湾・東南アジアなら余裕で行けます！！'],
+    [50000,'🎫 LCCで弾丸海外ならもう行ける！あと少し！'],
+    [1,'💪 利確の第一歩！コツコツ旅の資金を貯めよう'],
+  ];
+  const m=credit<=0?'📉 まずは利確してクレジットを貯めよう！':(msgs.find(([t])=>credit>=t)||msgs[4])[1];
+  document.getElementById('travelMsg').textContent=`海外旅行費、${credit>0?'いま '+yen(credit)+' 残ってます！！':'現在ゼロ…'} ${m}`;
+  document.getElementById('stTravelSpent').textContent=yen(spent);
+
+  const tb=document.querySelector('#evTable tbody'); tb.innerHTML='';
+  const LABELS={gain:'📈 利確',loss:'📉 損失',travel:'✈️ 旅行'};
+  [...S.events].reverse().forEach(e=>{
+    const pos=e.type==='gain';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${esc(e.date)}</td>
+      <td>${LABELS[e.type]||e.type}</td>
+      <td style="text-align:left;">${esc(e.memo||'-')}</td>
+      <td style="color:${pos?'var(--green)':'var(--red)'};font-weight:700;">${pos?'+':'−'}${yen(e.amount)}</td>
+      <td><span style="color:var(--red);cursor:pointer;font-weight:800;" onclick="delEvent(${e.id})">✕</span></td>`;
+    tb.appendChild(tr);
+  });
+  renderWorldMap();
+  renderVisited();
+}
+
+/* ============================================================
+   世界地図（簡易ベクターマップ・正距円筒図法）
+   x=(lon+180)/360*1000, y=(90-lat)/180*500
+============================================================ */
+const MAP_LAND=[
+ 'M42,72 L95,62 L170,55 L260,62 L347,100 L340,117 L300,128 L292,139 L286,160 L278,178 L258,190 L238,196 L222,194 L205,175 L175,160 L161,144 L120,130 L80,110 L50,95 Z',
+ 'M330,45 L390,32 L444,50 L430,72 L380,84 L345,68 Z',
+ 'M292,222 L330,218 L370,240 L403,268 L398,300 L370,330 L340,365 L315,400 L300,398 L296,360 L282,320 L272,280 L278,246 Z',
+ 'M470,138 L480,120 L500,108 L516,88 L540,78 L560,90 L556,110 L580,118 L590,140 L570,150 L545,148 L520,155 L495,150 L478,148 Z',
+ 'M488,98 L500,92 L505,104 L494,112 Z',
+ 'M470,160 L520,152 L560,158 L589,164 L610,185 L642,215 L630,240 L600,265 L590,300 L570,335 L552,348 L535,330 L540,295 L520,265 L490,240 L462,215 L455,185 Z',
+ 'M625,290 L638,285 L642,308 L628,318 Z',
+ 'M560,90 L620,68 L700,50 L790,42 L880,45 L960,58 L1000,66 L1000,95 L955,105 L940,120 L900,130 L870,150 L845,165 L820,180 L800,205 L785,225 L760,215 L740,225 L720,230 L700,205 L680,190 L650,185 L625,181 L605,165 L590,150 L580,130 L565,115 Z',
+ 'M690,190 L720,185 L735,205 L720,230 L705,240 L695,220 Z',
+ 'M780,230 L800,235 L818,248 L840,255 L860,262 L845,272 L815,268 L790,258 L778,245 Z',
+ 'M885,120 L895,128 L892,145 L880,158 L868,166 L862,158 L874,146 L882,133 Z',
+ 'M817,310 L860,300 L905,308 L928,325 L920,348 L895,360 L860,350 L830,340 L812,326 Z',
+ 'M975,355 L988,362 L982,378 L970,370 Z',
+];
+function renderWorldMap(){
+  const wrap=document.getElementById('worldMapWrap');
+  let pins='';
+  S.visited.forEach(v=>{
+    const px=(v.lon+180)/360*1000, py=(90-v.lat)/180*500;
+    pins+=`<g>
+      <line x1="${px}" y1="${py}" x2="${px}" y2="${py-16}" stroke="#ffd166" stroke-width="2"/>
+      <path d="M${px},${py-16} L${px+13},${py-12} L${px},${py-8} Z" fill="#ff5d7a"/>
+      <circle cx="${px}" cy="${py}" r="2.6" fill="#ffd166"/>
+      <title>${esc(v.flag||'🚩')} ${esc(v.country)}・${esc(v.city)}</title>
+    </g>`;
+  });
+  wrap.innerHTML=`<svg viewBox="0 0 1000 500" style="width:100%;height:auto;display:block;">
+    <rect width="1000" height="500" fill="#050f1f"/>
+    ${MAP_LAND.map(d=>`<path d="${d}" fill="#12365c" stroke="#2b6a9e" stroke-width="1"/>`).join('')}
+    ${pins}
+  </svg>
+  <p class="muted" style="padding:6px 10px;">※簡易世界地図です。旗にカーソルを合わせると都市名が出ます。</p>`;
+}
+function renderCityPreset(){
+  const sel=document.getElementById('cityPreset');
+  sel.innerHTML='<option value="">📍 都市を選択…</option>'+
+    CITIES.map((c,i)=>`<option value="${i}">${c.flag} ${esc(c.country)}・${esc(c.city)}</option>`).join('');
+}
+function addVisit(){
+  const pi=document.getElementById('cityPreset').value;
+  let v;
+  if(pi!==''){
+    const c=CITIES[Number(pi)];
+    v={city:c.city,country:c.country,flag:c.flag,lat:c.lat,lon:c.lon};
+  }else{
+    const city=document.getElementById('cityName').value.trim();
+    const country=document.getElementById('countryName').value.trim();
+    const lat=Number(document.getElementById('cityLat').value);
+    const lon=Number(document.getElementById('cityLon').value);
+    if(!city||!country||isNaN(lat)||isNaN(lon)) return alert('都市を選択するか、都市名・国名・緯度・経度をすべて入力してください');
+    v={city,country,flag:'🚩',lat,lon};
+  }
+  if(S.visited.some(x=>x.city===v.city&&x.country===v.country)) return alert('すでに登録済みです');
+  v.id=Date.now();
+  S.visited.push(v); save();
+  document.getElementById('cityPreset').value='';
+  ['cityName','countryName','cityLat','cityLon'].forEach(i=>document.getElementById(i).value='');
+  renderAll();
+}
+function delVisit(id){
+  S.visited=S.visited.filter(v=>v.id!==id); save(); renderAll();
+}
+function renderVisited(){
+  const el=document.getElementById('visitedList'); el.innerHTML='';
+  S.visited.forEach(v=>{
+    const d=document.createElement('div'); d.className='visited-pill';
+    d.innerHTML=`<span>${esc(v.flag||'🚩')}</span><b>${esc(v.country)}</b>${esc(v.city)}<span class="del" onclick="delVisit(${v.id})">✕</span>`;
+    el.appendChild(d);
+  });
+  document.getElementById('stCountries').textContent=new Set(S.visited.map(v=>v.country)).size+'ヶ国';
+  document.getElementById('stCities').textContent=S.visited.length+'都市';
+}
+
+/* ============================================================
+   エクスポート / インポート
+============================================================ */
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='資産管理トラッカー_backup_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+function importData(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!confirm('現在のデータを上書きしてインポートしますか？')) return;
+      S=Object.assign(load(),d); save(); renderAll();
+      alert('インポートしました！');
+    }catch(e){ alert('ファイルの読み込みに失敗しました'); }
+  };
+  r.readAsText(f);
+  ev.target.value='';
+}
+
+/* ============================================================
+   初期化
+============================================================ */
+function renderAll(){
+  renderPyramidAndSides(); renderFilters(); renderCompanies();
+  renderAlloc(); renderAssetPage(); renderTravel();
+}
+function tickClock(){
+  const d=new Date();
+  const z=n=>String(n).padStart(2,'0');
+  document.getElementById('clock').textContent=`${z(d.getHours())}:${z(d.getMinutes())} | ${d.getFullYear()}/${z(d.getMonth()+1)}/${z(d.getDate())}`;
+}
+setInterval(tickClock,30000); tickClock();
+// 表示モード復元
+function updateVmButtons(){
+  document.body.dataset.view=S.viewMode||'auto';
+  document.querySelectorAll('#viewmode button').forEach(x=>x.classList.toggle('on',x.dataset.vm===(S.viewMode||'auto')));
+}
+document.getElementById('evDate').value=new Date().toISOString().slice(0,10);
+renderCityPreset();
+// ---- 起動：前回のユーザーで自動ログイン／初回はログイン画面 ----
+const lastUser=localStorage.getItem('investTracker_lastUser');
+if(lastUser){ doLogin(lastUser); }
+else { updateVmButtons(); renderAll(); showLogin(); }
+</script>
+</body>
+</html>
